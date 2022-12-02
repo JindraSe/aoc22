@@ -57,18 +57,18 @@ object RPS_Shape:
 def sum_rps_score(as_outcome: Boolean): Int =
   Source.fromFile("../02-input.txt", "utf8").getLines().map(
     _ match
-        case line if line.trim.nonEmpty && line.length >= 3 =>
-          val elfs_shape = RPS_Shape.from_letter(line.apply(0))
-          
-          val my_shape =
-            if as_outcome then
-              elfs_shape.move_against(RPS_Outcome.from_letter(line.apply(2)))
-            else
-              RPS_Shape.from_letter(line.apply(2))
-          
-          my_shape.game_score(elfs_shape)
-        
-        case _ => 0
+      case line if line.trim.nonEmpty && line.length >= 3 =>
+        val elfs_shape = RPS_Shape.from_letter(line.apply(0))
+
+        val my_shape =
+          if as_outcome then
+            elfs_shape.move_against(RPS_Outcome.from_letter(line.apply(2)))
+          else
+            RPS_Shape.from_letter(line.apply(2))
+
+        my_shape.game_score(elfs_shape)
+
+      case _ => 0
   ).sum
 
 
