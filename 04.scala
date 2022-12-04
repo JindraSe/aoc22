@@ -8,10 +8,12 @@ class ID_Range(val from: Int, val to: Int):
   def overlaps(other: ID_Range): Boolean =
     other.from <= to && from <= other.to
 
+
 object ID_Range:
   def fromString(str: String): ID_Range =
     val split_str = str.split('-')
     ID_Range(split_str(0).toInt, split_str(1).toInt)
+
 
 def read_and_count_overlapping(only_fully_contained: Boolean): Int =
   Source.fromFile("../04-input.txt", "utf8").getLines(
