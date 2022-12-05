@@ -1,28 +1,34 @@
 import scala.io.Source
 
 
-class Crates(val arr: Array[Array[Char]]):
-  def move(from: Int, to: Int, count: Int = 1): Crates =
-    var arr_copy = arr
-    arr_copy(to - 1) = arr_copy(to - 1) ++ arr_copy(from - 1).takeRight(count)
-    arr_copy(from - 1) = arr_copy(from - 1).dropRight(count)
-    Crates(arr_copy)
-  
-  def tops: String = arr.map(_.last).mkString
+class Crates(val vec: Vector[Vector[Char]]):
+  def move(from: Int, to: Int, count: Int, reversed: Boolean = true): Crates =
+    val maybe_reverse = (v: Vector[Char]) => if reversed then v.reverse else v
     
+    Crates(
+      vec.updated(to - 1,
+        vec(to - 1) ++ maybe_reverse(vec(from - 1).takeRight(count))
+      ).updated(from - 1,
+        vec(from - 1).dropRight(count)))
+
+  def tops: String = vec.map(_.last).mkString
+
 
 def read_and_store_crates: Crates =
-  var arr: Array[Array[Char]] = Array.fill(9)(Array.empty)
+  Crates(Source.fromFile("../05-input-crates.txt").getLines(
+    ).filter(
+      _.trim.nonEmpty
+    ).foldLeft(
+      Vector.fill(9)(Vector.empty)
+    )(
+      (vec: Vector[Vector[Char]], line: String) =>
+        vec.zipWithIndex.map(
+          (col, i) =>
+            val ch = line(i*4 + 1)
+            if ch.isLetter then ch +: col else col
+        )
+    ))
   
-  for line <- Source.fromFile("../05-input-crates.txt").getLines() do
-    var x = 0;
-    while x*4 + 1 < line.length do
-      if line(x*4 + 1).isLetter then
-        arr(x) = arr(x).prepended(line(x*4 + 1))
-      x += 1
-  
-  Crates(arr)
-
 
 def parse_move_line(line: String): (Int, Int, Int) =
   val split_line = line.split(' ')
@@ -30,18 +36,17 @@ def parse_move_line(line: String): (Int, Int, Int) =
 
 
 def read_moves_and_move(input_crates: Crates, by_one: Boolean = true): Crates =
-  var crates = input_crates
-  
-  for line <- Source.fromFile("../05-input-moves.txt").getLines() do
-    val (how_many, from, to) = parse_move_line(line)
-    if by_one then
-      for _ <- 0 until how_many do crates.move(from, to)
-    else
-      crates.move(from, to, how_many)
-  crates
+  Source.fromFile("../05-input-moves.txt").getLines.foldLeft(input_crates)(
+    (crates: Crates, line: String) =>
+      val (how_many, from, to) = parse_move_line(line)
+      crates.move(from, to, how_many, by_one)
+  )
 
 
-def task1: Unit = println(read_moves_and_move(read_and_store_crates).tops)
+def task1: Unit =
+  println(read_moves_and_move(read_and_store_crates).tops)
+
+
 def task2: Unit =
   println(read_moves_and_move(read_and_store_crates, false).tops)
 
