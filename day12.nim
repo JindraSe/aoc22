@@ -78,25 +78,20 @@ iterator reached_from_neighbors(heightmap: Heightmap,
       yield neighbor
 
 
-iterator find_all_occurances(heightmap: Heightmap, ch: char): Position =
+func find_occurance(heightmap: Heightmap, ch: char): Option[Position] =
   for y in 0 ..< heightmap.len:
     for x in 0 ..< heightmap[y].len:
       if heightmap[y][x] == ch:
-        yield (x, y)
-
-
-func find_first_occurance(heightmap: Heightmap, ch: char): Option[Position] =
-  for pos in find_all_occurances(heightmap, ch):
-    return some(pos)
+        return some((x, y))
   return none(Position)
 
 
 func find_start(heightmap: Heightmap): Option[Position] =
-  heightmap.find_first_occurance('S')
+  heightmap.find_occurance('S')
 
 
 func find_target(heightmap: Heightmap): Option[Position] =
-  heightmap.find_first_occurance('E')
+  heightmap.find_occurance('E')
 
 
 # reading input
