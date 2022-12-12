@@ -40,9 +40,13 @@ iterator neighbors(pos: Position): Position =
 
 
 func height(ch: char): int =
-  if ch == 'S': return 0
-  if ch == 'E': return 25
-  return ord(ch) - ord('a')
+  if ch == 'S': 0
+  elif ch == 'E': 25
+  else: ord(ch) - ord('a')
+
+
+func can_go(from_ch, to_ch: char): bool =
+  return height(to_ch) <= height(from_ch) + 1
 
 
 func in_bounds(heightmap: Heightmap, pos: Position): bool =
@@ -52,15 +56,25 @@ func in_bounds(heightmap: Heightmap, pos: Position): bool =
 
 iterator traversable_neighbors(heightmap: Heightmap,
                                pos: Position): Position =
-  let pos_height = heightmap[pos.y][pos.x].height()
+  let height_symbol = heightmap[pos.y][pos.x]
   
   for neighbor in pos.neighbors():
     if not heightmap.in_bounds(neighbor):
       continue
 
-    let neighbor_height = heightmap[neighbor.y][neighbor.x].height()
+    if can_go(height_symbol, heightmap[neighbor.y][neighbor.x]):
+      yield neighbor
 
-    if neighbor_height <= pos_height + 1:
+
+iterator reached_from_neighbors(heightmap: Heightmap,
+                                pos: Position): Position =
+  let height_symbol = heightmap[pos.y][pos.x]
+
+  for neighbor in pos.neighbors():
+    if not heightmap.in_bounds(neighbor):
+      continue
+    
+    if can_go(heightmap[neighbor.y][neighbor.x], height_symbol):
       yield neighbor
 
 
@@ -124,21 +138,34 @@ proc task1() =
   echo dijkstra(heightmap, start, target).get()
 
 
-# bruteforcing, 'cause it's easy; but it could be done
-# more effectively by starting at `E`, and keeping
-# track of all distances, I may rewrite it
+iterator reverse_dijkstra(heightmap: Heightmap,
+                          target: Position): PositionCost =
+  var visited = [target].toHashSet()
+  var expandable_nodes = [(target, 0)].toHeapQueue()
+
+
+  while expandable_nodes.len() > 0:
+    let (cur, cost) = expandable_nodes.pop()
+    for neighbor in heightmap.reached_from_neighbors(cur):
+      if neighbor in visited:
+        continue
+      
+      visited.incl(neighbor)
+      expandable_nodes.push((neighbor, cost + 1))
+      
+      yield (neighbor, cost + 1)
+
+
+iterator a_costs(heightmap: Heightmap): int =
+  let target = heightmap.find_target().get()
+  for (pos, cost) in reverse_dijkstra(heightmap, target):
+    if heightmap[pos.y][pos.x] in ['a', 'S']:
+      yield cost
+
+
 proc task2() =
   let heightmap = read_heightmap()
-  let target = heightmap.find_target().get()
-  let orig_start = heightmap.find_start().get()
-
-  var cur_min = dijkstra(heightmap, orig_start, target).get()
-
-  for start in heightmap.find_all_occurances('a'):
-    let cur_res = dijkstra(heightmap, start, target)
-    if cur_res.isSome(): cur_min = min(cur_min, cur_res.get())
-  
-  echo cur_min
+  echo heightmap.a_costs().toSeq().min()
 
 
 task1()
