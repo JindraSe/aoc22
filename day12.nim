@@ -155,16 +155,16 @@ iterator reverse_dijkstra(heightmap: Heightmap,
       yield (neighbor, cost + 1)
 
 
-iterator a_costs(heightmap: Heightmap): int =
+func smallest_a_cost(heightmap: Heightmap): int =
   let target = heightmap.find_target().get()
   for (pos, cost) in reverse_dijkstra(heightmap, target):
     if heightmap[pos.y][pos.x] in ['a', 'S']:
-      yield cost
+      return cost
 
 
 proc task2() =
   let heightmap = read_heightmap()
-  echo heightmap.a_costs().toSeq().min()
+  echo heightmap.smallest_a_cost()
 
 
 task1()
