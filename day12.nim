@@ -143,7 +143,6 @@ iterator reverse_dijkstra(heightmap: Heightmap,
   var visited = [target].toHashSet()
   var expandable_nodes = [(target, 0)].toHeapQueue()
 
-
   while expandable_nodes.len() > 0:
     let (cur, cost) = expandable_nodes.pop()
     for neighbor in heightmap.reached_from_neighbors(cur):
